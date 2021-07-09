@@ -1,8 +1,8 @@
-import {Abi as SchemaAbi} from "@truffle/contract-schema/spec";
+import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import * as Codec from "@truffle/codec";
 import * as Abi from "@truffle/abi-utils";
 
-import {Visitor, VisitOptions, dispatch, Node} from "./visitor";
+import { Visitor, VisitOptions, dispatch, Node } from "./visitor";
 
 export interface Component {
   name: string;
@@ -20,32 +20,32 @@ export interface Declarations {
 }
 
 export class DeclarationsCollector implements Visitor<Declarations> {
-  visitAbi({node: nodes}: VisitOptions<Abi.Abi>): Declarations {
+  visitAbi({ node: nodes }: VisitOptions<Abi.Abi>): Declarations {
     return nodes
-      .map((node) => dispatch({node, visitor: this}))
-      .reduce((a, b) => ({...a, ...b}), {});
+      .map((node) => dispatch({ node, visitor: this }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
-  visitEventEntry({node: entry}: VisitOptions<Abi.EventEntry>): Declarations {
+  visitEventEntry({ node: entry }: VisitOptions<Abi.EventEntry>): Declarations {
     return entry.inputs
-      .map((node) => dispatch({node, visitor: this}))
-      .reduce((a, b) => ({...a, ...b}), {});
+      .map((node) => dispatch({ node, visitor: this }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
   visitFunctionEntry({
     node: entry,
   }: VisitOptions<Abi.FunctionEntry>): Declarations {
     return [...entry.inputs, ...(entry.outputs || [])]
-      .map((node) => dispatch({node, visitor: this}))
-      .reduce((a, b) => ({...a, ...b}), {});
+      .map((node) => dispatch({ node, visitor: this }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
   visitConstructorEntry({
     node: entry,
   }: VisitOptions<Abi.ConstructorEntry>): Declarations {
     return entry.inputs
-      .map((node) => dispatch({node, visitor: this}))
-      .reduce((a, b) => ({...a, ...b}), {});
+      .map((node) => dispatch({ node, visitor: this }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
   visitFallbackEntry({
@@ -60,7 +60,9 @@ export class DeclarationsCollector implements Visitor<Declarations> {
     return {};
   }
 
-  visitParameter({node: parameter}: VisitOptions<Abi.Parameter>): Declarations {
+  visitParameter({
+    node: parameter,
+  }: VisitOptions<Abi.Parameter>): Declarations {
     if (!parameter.type.startsWith("tuple")) {
       return {};
     }
@@ -68,9 +70,9 @@ export class DeclarationsCollector implements Visitor<Declarations> {
     const components = parameter.components || [];
     const signature = Codec.AbiData.Utils.abiTupleSignature(components);
     const declaration: Declaration = {
-      components: components.map(({name, type, components}) =>
+      components: components.map(({ name, type, components }) =>
         !components
-          ? {name, type}
+          ? { name, type }
           : {
               name,
               type,
@@ -82,16 +84,17 @@ export class DeclarationsCollector implements Visitor<Declarations> {
     if ("internalType" in parameter && parameter.internalType) {
       const match = parameter.internalType.match(/struct ([^\[]+).*/);
       if (match) {
-        declaration.identifier = match[1];
+        // HACK remove
+        declaration.identifier = match[1].replace(/[^0-9a-zA-Z_]/gi, "_");
       }
     }
 
     const declarations = {
       ...components
         .map((component: Abi.Parameter) =>
-          this.visitParameter({node: component})
+          this.visitParameter({ node: component })
         )
-        .reduce((a, b) => ({...a, ...b}), {}),
+        .reduce((a, b) => ({ ...a, ...b }), {}),
 
       [signature]: declaration,
     };

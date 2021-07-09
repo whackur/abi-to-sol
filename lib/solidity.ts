@@ -1,9 +1,9 @@
 import prettier from "prettier";
 import * as Codec from "@truffle/codec";
 import * as Abi from "@truffle/abi-utils";
-import {Abi as SchemaAbi} from "@truffle/contract-schema/spec";
+import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 
-import {Visitor, VisitOptions, dispatch, Node} from "./visitor";
+import { Visitor, VisitOptions, dispatch, Node } from "./visitor";
 
 import * as defaults from "./defaults";
 
@@ -19,6 +19,7 @@ export interface GenerateSolidityOptions {
   name?: string;
   solidityVersion?: string;
   license?: string;
+  prettier?: boolean;
 }
 
 export const generateSolidity = ({
@@ -32,6 +33,10 @@ export const generateSolidity = ({
       declarations: collectDeclarations(abi),
     }),
   });
+
+  if (!options.prettier) {
+    return generated;
+  }
 
   try {
     return prettier.format(generated, {
@@ -50,7 +55,7 @@ interface Context {
 
 type Visit<N extends Node> = VisitOptions<N, Context | undefined>;
 
-type ConstructorOptions = {declarations: Declarations} & Omit<
+type ConstructorOptions = { declarations: Declarations } & Omit<
   GenerateSolidityOptions,
   "abi"
 >;
@@ -77,7 +82,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
 
     this.identifiers = {};
     let index = 0;
-    for (const [signature, {identifier}] of Object.entries(declarations)) {
+    for (const [signature, { identifier }] of Object.entries(declarations)) {
       if (identifier) {
         this.identifiers[signature] = identifier;
       } else {
@@ -86,7 +91,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     }
   }
 
-  visitAbi({node: abi}: Visit<Abi.Abi>) {
+  visitAbi({ node: abi }: Visit<Abi.Abi>) {
     return [
       this.generateHeader(),
       this.generateDeclarations(),
@@ -95,8 +100,8 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     ].join("\n\n");
   }
 
-  visitFunctionEntry({node: entry}: Visit<Abi.FunctionEntry>): string {
-    const {name, inputs, stateMutability} = entry;
+  visitFunctionEntry({ node: entry }: Visit<Abi.FunctionEntry>): string {
+    const { name, inputs, stateMutability } = entry;
 
     return [
       `function ${name}(`,
@@ -144,13 +149,13 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     ].join(" ");
   }
 
-  visitConstructorEntry({node: entry}: Visit<Abi.ConstructorEntry>): string {
+  visitConstructorEntry({ node: entry }: Visit<Abi.ConstructorEntry>): string {
     // interfaces don't have constructors
     return "";
   }
 
-  visitFallbackEntry({node: entry}: Visit<Abi.FallbackEntry>): string {
-    const {stateMutability} = entry;
+  visitFallbackEntry({ node: entry }: Visit<Abi.FallbackEntry>): string {
+    const { stateMutability } = entry;
     return `fallback () external ${
       stateMutability === "payable" ? "payable" : ""
     };`;
@@ -160,8 +165,8 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     return `receive () external payable;`;
   }
 
-  visitEventEntry({node: entry}: Visit<Abi.EventEntry>): string {
-    const {name, inputs, anonymous} = entry;
+  visitEventEntry({ node: entry }: Visit<Abi.EventEntry>): string {
+    const { name, inputs, anonymous } = entry;
 
     return [
       `event ${name}(`,
@@ -181,11 +186,11 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     ].join(" ");
   }
 
-  visitParameter({node: parameter, context}: Visit<Abi.Parameter>) {
+  visitParameter({ node: parameter, context }: Visit<Abi.Parameter>) {
     const type = this.generateType(parameter);
 
     // @ts-ignore
-    const {parameterModifiers} = context;
+    const { parameterModifiers } = context;
 
     return [type, ...parameterModifiers(parameter), parameter.name].join(" ");
   }
@@ -223,7 +228,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
   private generateComponents(declaration: Declaration): string {
     return declaration.components
       .map((component) => {
-        const {name, type, signature} = component;
+        const { name, type, signature } = component;
 
         if (!signature) {
           return `${type} ${name};`;
@@ -241,7 +246,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
       return parameter.type;
     }
 
-    const {type, components} = parameter;
+    const { type, components } = parameter;
 
     const signature = Codec.AbiData.Utils.abiTupleSignature(components);
 
@@ -265,7 +270,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
   private generateInterface(abi: Abi.Abi): string {
     return [
       `interface ${this.name} {`,
-      ...abi.map((node) => dispatch({node, visitor: this})),
+      ...abi.map((node) => dispatch({ node, visitor: this })),
       `}`,
     ].join("\n");
   }
