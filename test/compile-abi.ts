@@ -1,35 +1,38 @@
-import {Abi as SchemaAbi} from "@truffle/contract-schema/spec";
+import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
+import Emittery from "emittery";
 
-const solc = require("solc");
+const { Compile, CompilerSupplier } = require("@truffle/compile-solidity");
 
-export const compileAbi = (content: string): SchemaAbi => {
+export interface CompileAbiOptions {
+  contents: string;
+  solidityVersion: string;
+}
+
+export const compileAbi = async ({
+  contents,
+  solidityVersion,
+}: CompileAbiOptions): Promise<SchemaAbi> => {
   const source = "interface.sol";
 
-  const input = {
-    language: "Solidity",
-    sources: {
-      [source]: {
-        content,
+  const {
+    compilations: [
+      {
+        contracts: [{ abi }],
       },
+    ],
+  } = await Compile.sources({
+    sources: {
+      "interface.sol": contents,
     },
-    settings: {
-      outputSelection: {
-        "*": {
-          "*": ["abi"],
+    options: {
+      compilers: {
+        solc: {
+          version: solidityVersion,
+          docker: true,
         },
       },
     },
-  };
+  });
 
-  const output: any = JSON.parse(solc.compile(JSON.stringify(input)));
-  const errors = (output.errors || []).filter(
-    ({type}: any) => type !== "Warning"
-  );
-  if (errors.length > 0) {
-    console.error(errors);
-  }
-  const {contracts} = output;
-  const sourceOutput: any = contracts[source];
-
-  return (Object.values(sourceOutput)[0] as any).abi;
+  return abi;
 };

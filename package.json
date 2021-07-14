@@ -26,10 +26,12 @@
     "url": "https://github.com/gnidan/abi-to-sol.git"
   },
   "devDependencies": {
+    "@truffle/compile-solidity": "^5.3.10",
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.14",
     "@types/jest-json-schema": "^2.1.2",
     "@types/prettier": "^2.1.1",
+    "@types/semver": "^7.3.7",
     "change-case": "^4.1.1",
     "faker": "^5.1.0",
     "fast-check": "^2.4.0",
@@ -52,6 +54,7 @@
     "neodoc": "^2.0.2",
     "prettier": "^2.1.2",
     "prettier-plugin-solidity": "^1.0.0-beta.13",
+    "semver": "^7.3.5",
     "source-map-support": "^0.5.19"
   },
   "husky": {
