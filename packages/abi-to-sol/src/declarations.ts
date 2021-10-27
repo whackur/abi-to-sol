@@ -7,6 +7,7 @@ import {Visitor, VisitOptions, dispatch, Node} from "./visitor";
 export interface Component {
   name: string;
   type: string;
+  internalType?: string;
   signature?: string;
 }
 
@@ -80,12 +81,13 @@ export class DeclarationsCollector implements Visitor<Declarations> {
     const components = parameter.components || [];
     const signature = Codec.AbiData.Utils.abiTupleSignature(components);
     const declaration: Declaration = {
-      components: components.map(({name, type, components}) =>
+      components: components.map(({name, type, internalType, components}) =>
         !components
-          ? {name, type}
+          ? {name, type, internalType}
           : {
               name,
               type,
+              internalType,
               signature: Codec.AbiData.Utils.abiTupleSignature(components),
             }
       ),
