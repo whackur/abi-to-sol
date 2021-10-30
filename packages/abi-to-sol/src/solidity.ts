@@ -363,7 +363,7 @@ class SolidityGenerator implements Visitor<string, Context | undefined> {
     variable: Abi.Parameter | Component,
     context: Pick<Context, "interfaceName"> = {}
   ): string {
-    const { type, internalType } = variable;
+    const { type } = variable;
 
     const signature = this.generateSignature(variable);
 

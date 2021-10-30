@@ -26,7 +26,6 @@ export interface Identifier {
 export interface Component {
   name: string;
   type: string;
-  internalType?: string;
   signature?: string;
 }
 
