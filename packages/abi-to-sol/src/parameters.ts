@@ -1,5 +1,5 @@
-import * as Codec from "@truffle/codec";
 import * as Abi from "@truffle/abi-utils";
+import * as Codec from "@truffle/codec";
 
 export interface Identifier {
   name: string;

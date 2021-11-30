@@ -2,7 +2,7 @@ import {Abi as SchemaAbi} from "@truffle/contract-schema/spec";
 import * as Codec from "@truffle/codec";
 import * as Abi from "@truffle/abi-utils";
 
-import {Visitor, VisitOptions, dispatch, Node} from "./visitor";
+import {Visitor, VisitOptions, dispatch, Node} from "../visitor";
 
 export interface CollectedDeclarations {
   /**
@@ -247,7 +247,6 @@ export const collectDeclarations = (
   }
 }
 
-function toParameterType(parameter: Abi.Parameter):
 
 interface Context {
 }
